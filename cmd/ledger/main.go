@@ -9,7 +9,8 @@ import (
 )
 
 type payload struct {
-	Name string `json:"name"`
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
 }
 
 func welcome(w http.ResponseWriter, r *http.Request) {
