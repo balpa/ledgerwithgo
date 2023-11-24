@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github/balpa/ledgerwithgo/data/storage"
+
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
@@ -18,6 +20,8 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only GET requests are allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	storage.ConnectDB()
 
 	fmt.Fprintf(w, "Welcome!!!")
 	fmt.Println("Endpoint Hit: welcome")
