@@ -17,6 +17,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	decoder := json.NewDecoder(r.Body)
+
+	var p payload
+	err := decoder.Decode(&p)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		fmt.Printf("could not decode JSON: %s\n", err)
+		return
+	}
+
+	fmt.Printf("Received payload: %+v\n", p)
+
 	response := map[string]interface{}{
 		"intValue":    1234,
 		"boolValue":   true,
@@ -32,7 +44,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(string(jsonResponse))
 	fmt.Fprintf(w, string(jsonResponse))
-	fmt.Println("Endpoint Hit: createUser")
+	fmt.Println("Endpoint hit: create-user")
 }
