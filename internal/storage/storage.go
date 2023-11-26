@@ -5,7 +5,10 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
+
+var db sql.DB
 
 func ConnectDB() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
@@ -48,4 +51,25 @@ func QueryDatabase() {
 
 		fmt.Println(col1, col2)
 	}
+}
+
+func CreateUniqueUser(name string, surname string) {
+	uuid := createUUID()
+
+	insertUniqueUser, err := db.Prepare("INSERT INTO ledgerappuserdata (uuid, name, surname) VALUES (?, ?, ?)")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insertUniqueUser.Close()
+
+	_, err = insertUniqueUser.Exec(uuid, name, surname)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("Unique user created.")
+}
+
+func createUUID() uuid.UUID {
+	return uuid.New()
 }
