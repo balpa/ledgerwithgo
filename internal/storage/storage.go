@@ -8,8 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var db sql.DB
-
 func ConnectDB() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
 	if err != nil {
@@ -56,7 +54,12 @@ func QueryDatabase() {
 func CreateUniqueUser(name string, surname string) {
 	uuid := createUUID()
 
-	insertUniqueUser, err := db.Prepare("INSERT INTO ledgerappuserdata (uuid, name, surname) VALUES (?, ?, ?)")
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	insertUniqueUser, err := db.Prepare("INSERT INTO ledgerappuserdata (id, name, surname) VALUES (?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
