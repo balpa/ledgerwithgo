@@ -78,3 +78,24 @@ func CreateUniqueUser(name string, surname string) {
 func createUUID() uuid.UUID {
 	return uuid.New()
 }
+
+func AddCredit(name string, surname string, amount int) {
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	addCredit, err := db.Prepare("UPDATE ledgerappuserdata SET credit = IFNULL(credit, 0) + ? WHERE name = ? AND surname = ?")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer addCredit.Close()
+
+	_, err = addCredit.Exec(amount, name, surname)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("Credit amount changed!")
+}
