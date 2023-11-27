@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//currently opening db for every func. this needs to be refacted
+
 func ConnectDB() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
 	if err != nil {
