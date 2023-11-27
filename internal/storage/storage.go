@@ -59,7 +59,7 @@ func CreateUniqueUser(name string, surname string) {
 		panic(err.Error())
 	}
 
-	insertUniqueUser, err := db.Prepare("INSERT INTO ledgerappuserdata (id, name, surname) VALUES (?, ?, ?)")
+	insertUniqueUser, err := db.Prepare("INSERT IGNORE INTO ledgerappuserdata (uuid, name, surname) VALUES (?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
