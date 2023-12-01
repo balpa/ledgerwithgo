@@ -103,3 +103,38 @@ func GetAllBalances() []byte {
 
 	return jsonData
 }
+
+func UserBalance(name string, surname string) ([]byte, error) {
+	userBalance, err := db.Prepare("SELECT name, surname, credit FROM ledgerappuserdata WHERE name = ? AND surname = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer userBalance.Close()
+
+	rows, err := userBalance.Query(name, surname)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var balances []Balance
+
+	for rows.Next() {
+		var balance Balance
+		if err := rows.Scan(&balance.Name, &balance.Surname, &balance.Credit); err != nil {
+			return nil, err
+		}
+		balances = append(balances, balance)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	jsonData, err := json.Marshal(balances)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
+}
