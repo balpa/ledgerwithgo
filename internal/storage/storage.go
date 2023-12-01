@@ -2,64 +2,43 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
-//currently opening db for every func. this needs to be refacted
+type Balance struct {
+	Name    string          `json:"name"`
+	Surname string          `json:"surname"`
+	Credit  sql.NullFloat64 `json:"credit"`
+}
 
-func ConnectDB() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
+var db *sql.DB
+
+func createUUID() uuid.UUID {
+	return uuid.New()
+}
+
+func ConnectDB() error {
+	var err error
+	db, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	fmt.Println("Connected to MySQL ledgerapp db!")
-
-	return db, nil
-}
-
-func QueryDatabase() {
-	db, err := ConnectDB()
-	if err != nil {
-		fmt.Println("Error connecting to database:", err)
-		return
-	}
-	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM ledgerappuserdata")
-	if err != nil {
-		fmt.Println("Error querying database:", err)
-		return
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var col1, col2 string
-		if err := rows.Scan(&col1, &col2); err != nil {
-			fmt.Println("Error scanning rows:", err)
-			return
-		}
-
-		fmt.Println(col1, col2)
-	}
+	return nil
 }
 
 func CreateUniqueUser(name string, surname string) {
 	uuid := createUUID()
-
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
-	if err != nil {
-		panic(err.Error())
-	}
 
 	insertUniqueUser, err := db.Prepare("INSERT IGNORE INTO ledgerappuserdata (uuid, name, surname) VALUES (?, ?, ?)")
 	if err != nil {
@@ -75,17 +54,7 @@ func CreateUniqueUser(name string, surname string) {
 	fmt.Println("Unique user created.")
 }
 
-func createUUID() uuid.UUID {
-	return uuid.New()
-}
-
 func AddCredit(name string, surname string, amount int) {
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/ledgerapp")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-
 	addCredit, err := db.Prepare("UPDATE ledgerappuserdata SET credit = IFNULL(credit, 0) + ? WHERE name = ? AND surname = ?")
 	if err != nil {
 		panic(err.Error())
@@ -98,4 +67,39 @@ func AddCredit(name string, surname string, amount int) {
 	}
 
 	fmt.Println("Credit amount changed!")
+}
+
+func GetAllBalances() []byte {
+	allBalances, err := db.Prepare("SELECT name, surname, credit FROM ledgerappuserdata")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer allBalances.Close()
+
+	rows, err := allBalances.Query()
+	if err != nil {
+		panic(err.Error())
+	}
+	defer rows.Close()
+
+	var balances []Balance
+
+	for rows.Next() {
+		var balance Balance
+		if err := rows.Scan(&balance.Name, &balance.Surname, &balance.Credit); err != nil {
+			panic(err.Error())
+		}
+		balances = append(balances, balance)
+	}
+
+	if err := rows.Err(); err != nil {
+		panic(err.Error())
+	}
+
+	jsonData, err := json.Marshal(balances)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return jsonData
 }

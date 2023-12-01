@@ -24,6 +24,7 @@ func HandleRequests() {
 	r.HandleFunc("/api/welcome", api.Welcome)
 	r.HandleFunc("/api/create-user", api.CreateUser)
 	r.HandleFunc("/api/add-credit", api.AddCredit)
+	r.HandleFunc("/api/get-all-balances", api.GetAllBalances)
 
 	http.ListenAndServe(":8080", nil)
 }
