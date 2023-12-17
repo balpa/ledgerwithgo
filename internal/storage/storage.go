@@ -138,3 +138,30 @@ func UserBalance(name string, surname string) ([]byte, error) {
 
 	return jsonData, nil
 }
+
+func TransferCredit(
+	SenderName string,
+	SenderSurname string,
+	ReceiverName string,
+	ReceiverSurname string,
+	TransferAmount int) {
+	addToReceiver, err := db.Prepare("UPDATE ledgerappuserdata SET credit = IFNULL(credit, 0) + ? WHERE name = ? AND surname = ?")
+	removeFromSender, err := db.Prepare("UPDATE ledgerappuserdata SET credit = IFNULL(credit, 0) - ? WHERE name = ? AND surname = ?")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer addToReceiver.Close()
+	defer removeFromSender.Close()
+
+	_, err = addToReceiver.Exec(TransferAmount, ReceiverName, ReceiverSurname)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = removeFromSender.Exec(TransferAmount, SenderName, SenderSurname)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("Transfer done")
+}

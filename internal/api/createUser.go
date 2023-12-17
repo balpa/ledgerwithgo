@@ -31,21 +31,5 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	storage.CreateUniqueUser(payload.Name, payload.Surname)
 
-	// response := map[string]interface{}{
-	// 	"intValue":    1234,
-	// 	"boolValue":   true,
-	// 	"stringValue": "hello!",
-	// 	"objectValue": map[string]interface{}{
-	// 		"arrayValue": []int{1, 2, 3, 4},
-	// 	},
-	// }
-
-	// jsonResponse, err := json.Marshal(response)
-	// if err != nil {
-	// 	fmt.Printf("could not marshal json: %s\n", err)
-	// 	return
-	// }
-
-	// fmt.Fprintf(w, string(jsonResponse))
 	fmt.Println("Endpoint hit: create-user")
 }

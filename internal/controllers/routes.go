@@ -26,6 +26,7 @@ func HandleRequests() {
 	r.HandleFunc("/api/add-credit", api.AddCredit)
 	r.HandleFunc("/api/get-all-balances", api.GetAllBalances)
 	r.HandleFunc("/api/get-user-balance", api.GetUserBalance)
+	r.HandleFunc("/api/transfer-credit", api.TransferCredit)
 
 	http.ListenAndServe(":8080", nil)
 }
