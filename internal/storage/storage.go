@@ -16,6 +16,13 @@ type Balance struct {
 	Credit  sql.NullFloat64 `json:"credit"`
 }
 
+type BalanceLog struct {
+	Name    string    `json:"Name"`
+	Surname string    `json:"Surname"`
+	Credit  int       `json:"Credit"`
+	UTCTime time.Time `json:"UTCTime"`
+}
+
 var db *sql.DB
 
 func createUUID() uuid.UUID {
@@ -205,29 +212,36 @@ func TransferCredit(
 
 }
 
-func GetBalanceLog(Name string, Surname string, startDate time.Time, endDate time.Time) {
-	query := "SELECT name, surname, credit, utc_time FROM balance_logs WHERE name = ? AND surname = ? AND timestamp_utc >= ? AND timestamp_utc <= ?"
+func GetBalanceLog(Name string, Surname string, startDate time.Time, endDate time.Time) ([]byte, error) {
+	query := "SELECT name, surname, credit, timestamp_utc FROM balance_logs WHERE name = ? AND surname = ? AND timestamp_utc >= ? AND timestamp_utc <= ?"
 
 	rows, err := db.Query(query, Name, Surname, startDate, endDate)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		var name, surname string
-		var credit int
-		var utcTime time.Time
+	var logs []BalanceLog
 
-		err := rows.Scan(&name, &surname, &credit, &utcTime)
+	for rows.Next() {
+		var log BalanceLog
+
+		err := rows.Scan(&log.Name, &log.Surname, &log.Credit, &log.UTCTime)
 		if err != nil {
-			panic(err.Error())
+			return nil, err
 		}
 
-		fmt.Printf("Name: %s, Surname: %s, Credit: %d, UTC Time: %s\n", name, surname, credit, utcTime.String())
+		logs = append(logs, log)
 	}
 
 	if err = rows.Err(); err != nil {
-		panic(err.Error())
+		return nil, err
 	}
+
+	jsonData, err := json.Marshal(logs)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
 }

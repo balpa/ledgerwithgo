@@ -32,7 +32,12 @@ func GetBalanceLogByDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage.GetBalanceLog(payload.Name, payload.Surname, payload.StartDate, payload.EndDate)
+	balanceLog, err := storage.GetBalanceLog(payload.Name, payload.Surname, payload.StartDate, payload.EndDate)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, string(balanceLog))
 
 	fmt.Println("Endpoint hit: get balance log")
 }
