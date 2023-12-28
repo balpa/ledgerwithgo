@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -54,6 +55,38 @@ func CreateUniqueUser(name string, surname string) {
 	fmt.Println("Unique user created.")
 }
 
+func StoreBalanceLogs() {
+	allBalances, err := db.Query("SELECT name, surname, credit FROM ledgerappuserdata")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer allBalances.Close()
+
+	currentTime := time.Now().UTC()
+
+	for allBalances.Next() {
+		var name, surname string
+		var credit int
+
+		err := allBalances.Scan(&name, &surname, &credit)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		insertQuery := "INSERT INTO balance_logs (name, surname, credit, timestamp_utc) VALUES (?, ?, ?, ?)"
+		_, err = db.Exec(insertQuery, name, surname, credit, currentTime)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	if err = allBalances.Err(); err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("store balance log!")
+}
+
 func AddCredit(name string, surname string, amount int) {
 	addCredit, err := db.Prepare("UPDATE ledgerappuserdata SET credit = IFNULL(credit, 0) + ? WHERE name = ? AND surname = ?")
 	if err != nil {
@@ -66,7 +99,10 @@ func AddCredit(name string, surname string, amount int) {
 		panic(err.Error())
 	}
 
+	StoreBalanceLogs()
+
 	fmt.Println("Credit amount changed!")
+
 }
 
 func GetAllBalances() []byte {
@@ -163,5 +199,35 @@ func TransferCredit(
 		panic(err.Error())
 	}
 
+	StoreBalanceLogs()
+
 	fmt.Println("Transfer done")
+
+}
+
+func GetBalanceLog(Name string, Surname string, startDate time.Time, endDate time.Time) {
+	query := "SELECT name, surname, credit, utc_time FROM balance_logs WHERE name = ? AND surname = ? AND timestamp_utc >= ? AND timestamp_utc <= ?"
+
+	rows, err := db.Query(query, Name, Surname, startDate, endDate)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name, surname string
+		var credit int
+		var utcTime time.Time
+
+		err := rows.Scan(&name, &surname, &credit, &utcTime)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Printf("Name: %s, Surname: %s, Credit: %d, UTC Time: %s\n", name, surname, credit, utcTime.String())
+	}
+
+	if err = rows.Err(); err != nil {
+		panic(err.Error())
+	}
 }
