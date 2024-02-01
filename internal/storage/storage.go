@@ -147,14 +147,15 @@ func GetAllBalances() []byte {
 	return jsonData
 }
 
-func UserBalance(name string, surname string) ([]byte, error) {
-	userBalance, err := db.Prepare("SELECT name, surname, credit FROM ledgerappuserdata WHERE name = ? AND surname = ?")
+func UserBalance(name string, surname string, token string) ([]byte, error) {
+	userBalance, err := db.Prepare(
+		"SELECT name, surname, credit FROM ledgerappuserdata WHERE name = ? AND surname = ? AND Token = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer userBalance.Close()
 
-	rows, err := userBalance.Query(name, surname)
+	rows, err := userBalance.Query(name, surname, token)
 	if err != nil {
 		return nil, err
 	}

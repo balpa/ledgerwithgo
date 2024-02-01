@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 type userPayload struct {
 	Name    string `json:"name"`
 	Surname string `json:"surname"`
+	Token   string `json:"token"`
 }
 
 func GetUserBalance(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +31,9 @@ func GetUserBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userBalance, err := storage.UserBalance(payload.Name, payload.Surname)
+	encodedString := base64.StdEncoding.EncodeToString([]byte(payload.Token))
+
+	userBalance, err := storage.UserBalance(payload.Name, payload.Surname, encodedString)
 	if err != nil {
 		panic(err.Error())
 	}
