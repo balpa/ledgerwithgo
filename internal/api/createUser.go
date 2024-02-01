@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 type payload struct {
 	Name    string `json:"name"`
 	Surname string `json:"surname"`
+	Token   string `json:"token"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +31,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage.CreateUniqueUser(payload.Name, payload.Surname)
+	encodedString := base64.StdEncoding.EncodeToString([]byte(payload.Token))
+
+	storage.CreateUniqueUser(payload.Name, payload.Surname, encodedString)
 
 	fmt.Println("Endpoint hit: create-user")
 }

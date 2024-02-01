@@ -45,16 +45,16 @@ func ConnectDB() error {
 	return nil
 }
 
-func CreateUniqueUser(name string, surname string) {
+func CreateUniqueUser(name string, surname string, token string) {
 	uuid := createUUID()
 
-	insertUniqueUser, err := db.Prepare("INSERT IGNORE INTO ledgerappuserdata (uuid, name, surname) VALUES (?, ?, ?)")
+	insertUniqueUser, err := db.Prepare("INSERT IGNORE INTO ledgerappuserdata (uuid, name, surname, Token) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer insertUniqueUser.Close()
 
-	_, err = insertUniqueUser.Exec(uuid, name, surname)
+	_, err = insertUniqueUser.Exec(uuid, name, surname, token)
 	if err != nil {
 		panic(err.Error())
 	}
