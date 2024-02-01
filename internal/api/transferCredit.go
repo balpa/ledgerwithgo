@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 type transferCreditPayload struct {
 	SenderName      string `json:"SenderName"`
 	SenderSurname   string `json:"SenderSurname"`
+	SenderToken     string `json:"SenderToken"`
 	ReceiverName    string `json:"ReceiverName"`
 	ReceiverSurname string `json:"ReceiverSurname"`
 	TransferAmount  int    `json:"TransferAmount"`
@@ -32,9 +34,12 @@ func TransferCredit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	encodedString := base64.StdEncoding.EncodeToString([]byte(payload.SenderToken))
+
 	storage.TransferCredit(
 		payload.SenderName,
 		payload.SenderSurname,
+		encodedString,
 		payload.ReceiverName,
 		payload.ReceiverSurname,
 		payload.TransferAmount)
