@@ -148,8 +148,10 @@ func GetAllBalances() []byte {
 }
 
 func UserBalance(name string, surname string, token string) ([]byte, error) {
+	startTime := time.Now()
+
 	userBalance, err := db.Prepare(
-		"SELECT name, surname, credit FROM ledgerappuserdata WHERE name = ? AND surname = ? AND Token = ?")
+		"SELECT name, surname, credit FROM ledgerappuserdata WHERE name = ? AND surname = ? AND Token = ? LIMIT 1")
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +181,9 @@ func UserBalance(name string, surname string, token string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	elapsedTime := time.Since(startTime)
+	fmt.Println("Execution time:", elapsedTime)
 
 	return jsonData, nil
 }
